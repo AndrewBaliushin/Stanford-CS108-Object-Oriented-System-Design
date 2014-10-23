@@ -12,8 +12,6 @@ class InputDataApearances {
 
 class Appearances {
 
-    private static int sameCountCounter = 0;
-
     /**
 	 * Returns the number of elements that appear the same number
 	 * of times in both collections. Static method. (see handout).
@@ -21,9 +19,13 @@ class Appearances {
 	 */
     public static <T> int sameCount( Collection<T> a, Collection<T> b ) {
 
+    	int sameCountCounter = 0;
+    	
         Map<T, Integer> countMapA = getCountMap(a);
         Map<T, Integer> countMapB = getCountMap(b);
 
+        
+        //for efficiency 
         Map<T, Integer> smallerMap = new HashMap<T, Integer>();
         Map<T, Integer> biggerMap = new HashMap<T, Integer>();
         if (countMapA.size() <= countMapB.size()) {
@@ -34,9 +36,9 @@ class Appearances {
             biggerMap = countMapA;
         }
 
-        for (Map.Entry<T, Integer> entry : smallerMap.entrySet()) {
-            if ( biggerMap.get(entry.getKey()) == entry.getValue() ) {
-                System.out.println(entry.getKey() + " appeared in both collections " + entry.getValue()
+        for ( T key : smallerMap.keySet()) {
+            if ( biggerMap.get(key) == smallerMap.get(key) ) {
+                System.out.println(key + " appeared in both collections " + smallerMap.get(key)
                         + " times");
                 sameCountCounter++;
             }
@@ -62,6 +64,7 @@ class Appearances {
 
     }
 }
+
 /*
 out:
 a appeared in both collections 2 times

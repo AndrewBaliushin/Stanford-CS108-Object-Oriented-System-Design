@@ -54,6 +54,7 @@ public class CharGrid {
 		int maxY = 0;
 
 		boolean found = false;
+
 		boolean foundPair = false;
 		
 		for (int i = 0; i < grid.length; i++) {
@@ -65,6 +66,7 @@ public class CharGrid {
 						minY = j;
 					} else {
 						foundPair = true;
+
 						maxX = i;
 						maxY = j;
 					}
@@ -73,6 +75,7 @@ public class CharGrid {
 		}
 
 		if (found && !foundPair) {
+
 			return 1;
 		} else if (found) {
 			return ((maxX - minX + 1) * (maxY - minY + 1));

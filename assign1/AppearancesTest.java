@@ -19,13 +19,20 @@ public class AppearancesTest {
 	
 	@Test
 	public void testSameCount1() {
+		List<String> a = stringToList("asdafdfcxvx");
+		List<String> b = stringToList("opkmklnjnpi");
+		assertEquals(0, Appearances.sameCount(a, b));
+	}
+	
+	@Test
+	public void testSameCount2() {
 		List<String> a = stringToList("abbccc");
 		List<String> b = stringToList("cccbba");
 		assertEquals(3, Appearances.sameCount(a, b));
 	}
 	
 	@Test
-	public void testSameCount2() {
+	public void testSameCount3() {
 		// basic List<Integer> cases
 		List<Integer> a = Arrays.asList(1, 2, 3, 1, 2, 3, 5);
 		assertEquals(1, Appearances.sameCount(a, Arrays.asList(1, 9, 9, 1)));

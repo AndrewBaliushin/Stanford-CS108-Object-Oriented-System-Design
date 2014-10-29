@@ -36,7 +36,41 @@ public class Piece {
 	*/
 	public Piece(TPoint[] points) {
 		// YOUR CODE HERE
-	}
+
+		body = Arrays.copyOf(points, points.length);
+
+		//map that help us find lowest points of piece
+		Map<Integer, Integer> primordialSkirt = new HashMap<Integer, Integer>();
+		
+		//define width & height & skirt
+		for (int i = 0; i < body.length; i++) {
+			if (body[i].x > width) {
+				width = body[i].x;
+			}
+			if (body[i].y > height) {
+				height = body[i].y;
+			}			
+			
+			if (primordialSkirt.get(body[i].x) != null) {
+				int localMinY = primordialSkirt.get(body[i].x);
+				if (localMinY > body[i].y) {
+					primordialSkirt.put(body[i].x, body[i].y);
+				}
+			} else {
+				primordialSkirt.put(body[i].x, body[i].y);
+			}
+			
+		}
+		/* for understandable size. */
+		width += 1;
+		height +=1; 
+		
+		//define skirt
+		skirt = new int[width];
+		for (int i = 0; i < width; i++) {
+			skirt[i]= primordialSkirt.get(i); 
+		}
+	}//Piece(TPoint[])
 	
 
 	
@@ -86,10 +120,38 @@ public class Piece {
 	/**
 	 Returns a new piece that is 90 degrees counter-clockwise
 	 rotated from the receiver.
+	 
+	 -->My comment:
+	 I decided not to rotate pieces but rotate grid clockwise.
+	 So, the piece (or empty space) on position 0,0 will be
+	 at position (height-1),0
+	 Piece at 0,1 will be
+	 at ((height-1)-1),0
+	 etc
 	 */
 	public Piece computeNextRotation() {
-		return null; // YOUR CODE HERE
+		//return null; // YOUR CODE HERE
+		 
+		/*
+		 * max X could not be more than height - 1
+		 * so old 0 will be (height-1)
+		 */
+		int newMaxX = height - 1; 
+		
+		TPoint[] rotatedPiecePoints = new TPoint[body.length];
+		
+		for (int i = 0; i < body.length; i++) {
+			int rotatedX = newMaxX - body[i].y;
+			int rotatedY = body[i].x;
+			
+			rotatedPiecePoints[i] = new TPoint(rotatedX, rotatedY);
+		}
+		
+		return new Piece(rotatedPiecePoints);
+		
 	}
+	
+	
 
 	/**
 	 Returns a pre-computed piece that is 90 degrees counter-clockwise
@@ -119,9 +181,12 @@ public class Piece {
 		// (null will be false)
 		if (!(obj instanceof Piece)) return false;
 		Piece other = (Piece)obj;
+				
+		// YOUR CODE HERE		
+		List<TPoint> thisBody = new ArrayList<TPoint>(Arrays.asList(getBody()));
+		List<TPoint> objBody = new ArrayList<TPoint>(Arrays.asList(other.getBody()));
 		
-		// YOUR CODE HERE
-		return true;
+		return (thisBody.containsAll(objBody) && objBody.containsAll(thisBody));
 	}
 
 
@@ -187,7 +252,30 @@ public class Piece {
 	 to the first piece.
 	*/
 	private static Piece makeFastRotations(Piece root) {
-		return null; // YOUR CODE HERE
+		
+		Piece currentRotation = root.computeNextRotation();
+		
+		//if even first rotation doesn't do anything
+		if (root.equals(currentRotation)) {
+			root.next = root;
+			return root;
+		} else {
+			root.next = currentRotation;
+		}
+		
+		while(true) {
+			Piece nextPiece = currentRotation.computeNextRotation();
+			if (!nextPiece.equals(root)) {
+				currentRotation.next = nextPiece;
+			} else {
+				currentRotation.next = root; //close chain of links
+				break;
+			}
+			
+			currentRotation = nextPiece; //use next piece to repeat loop
+		} 
+		
+		return root;
 	}
 	
 	

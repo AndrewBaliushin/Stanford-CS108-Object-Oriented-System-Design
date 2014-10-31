@@ -153,6 +153,10 @@ public class BoardTest {
 		assertEquals(2, b3.getColumnHeight(1)); //just checking
 
 		assertEquals(2, b3.dropHeight(pyr3, 0)); // pyr3 is upside down pyr1
+		
+		assertEquals(2, b3.dropHeight(s, 0)); //s -- [(0,0), (1,0), (1,1), (2,1)]
+		
+		assertEquals(1, b3.dropHeight(sRotated, 1)); //[(1,0), (1,1), (0,1), (0,2)]
 
 	}
 	

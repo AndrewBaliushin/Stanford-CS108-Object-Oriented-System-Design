@@ -170,7 +170,7 @@ public class Board	{
 		
 		int finalRestHeight = 0;
 		for (int i = x; i < x + skirt.length; i++) {
-			int currentHeight = getColumnHeight(i) + skirt[i];
+			int currentHeight = getColumnHeight(i) - skirt[(i - x)]; //i(0)-x=0; i(1)-x=1...
 			if (currentHeight > finalRestHeight) {
 				finalRestHeight = currentHeight;
 			}

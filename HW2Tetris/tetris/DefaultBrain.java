@@ -17,6 +17,7 @@ package tetris;
 */
 
 public class DefaultBrain implements Brain {
+	
     /**
      Given a piece and a board, returns a move object that represents
      the best play for that piece, or returns null if no play is possible.
@@ -111,6 +112,6 @@ public class DefaultBrain implements Brain {
         // The weights, 8, 40, etc., are just made up numbers that appear to work
         return (8*maxHeight + 40*avgHeight + 1.25*holes);    
     }
-
+    
 }
 

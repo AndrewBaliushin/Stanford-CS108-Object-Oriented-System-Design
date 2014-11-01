@@ -243,6 +243,30 @@ public class BoardTest {
 		assertEquals(2, b3.getRowWidth(0));
 		assertEquals(1, b3.getRowWidth(2));
 		
+		b3.commit();
+		
+		Piece stick = new Piece(Piece.STICK_STR);
+		b3.place(stick, 2, 0);
+		
+		/* System.out.println(b3);
+			|   |
+			|   |
+			|  +|
+			|+ +|
+			|+++|
+			|+++|
+			-----
+		*/
+		
+		b3.clearRows();
+		assertEquals(1, b3.getColumnHeight(0));
+		assertEquals(0, b3.getColumnHeight(1));
+		assertEquals(2, b3.getColumnHeight(2));
+		assertEquals(2, b3.getRowWidth(0));
+		assertEquals(0, b3.getRowWidth(3));
+		
+		System.out.println(b3);
+		
 		
 	}
 }

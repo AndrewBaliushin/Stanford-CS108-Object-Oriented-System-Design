@@ -235,7 +235,7 @@ public class JTetris extends JComponent {
 	 Sets the enabling of the start/stop buttons
 	 based on the gameOn state.
 	*/
-	private void enableButtons() {
+	protected void enableButtons() {
 		startButton.setEnabled(!gameOn);
 		stopButton.setEnabled(gameOn);
 	}
@@ -337,7 +337,7 @@ public class JTetris extends JComponent {
 	/**
 	 Updates the count/score labels with the latest values.
 	 */
-	private void updateCounters() {
+	protected void updateCounters() {
 		countLabel.setText("Pieces " + count);
 		scoreLabel.setText("Score " + score);
 	}

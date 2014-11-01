@@ -3,7 +3,6 @@ package tetris;
 
 import java.util.Arrays;
 
-import javax.management.RuntimeErrorException;
 
 /**
  CS108 Tetris Board.
@@ -312,6 +311,7 @@ public class Board	{
 			if (widthsOfRows[from] == width) {//if row is full
 				from++; //skip this line and take from next
 				rowsCleared++; 
+				continue;
 			}
 			
 			if (from == to) {//if no copy required
@@ -321,6 +321,7 @@ public class Board	{
 			}
 			
 			copyRow(from, to); //move row down
+			makeHeightAndWidthArrays(); //update required
 			
 		
 			from++;

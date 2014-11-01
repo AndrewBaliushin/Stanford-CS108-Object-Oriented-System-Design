@@ -5,8 +5,6 @@ import java.util.*;
 
 import org.junit.*;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 /*
   Unit test for Piece class -- starter shell.
  */

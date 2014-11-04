@@ -8,4 +8,4 @@ http://web.stanford.edu/class/cs108/
 
 As part of my educational process I solved assignments from this course. 
 
-I highly recommend  this course to everyone who want to learning Java. 
+I highly recommend  this course to anyone who starts learning Java. 

@@ -278,8 +278,8 @@ public class Sudoku {
 	 * Sets up based on the given ints.
 	 */
 	public Sudoku(int[][] ints) {
-		//fill Spots lists and buckets.
-		convertToSpots(ints);
+		collectFilledSpots(ints);
+		collectEmptySpots(ints);
 		
 		//sort by number of possible values (min -> max)
 		Collections.sort(emptySpotsList);		
@@ -390,8 +390,7 @@ public class Sudoku {
 		return sb.toString();		
 	}
 	
-	private void convertToSpots(int[][] input) {
-		//create non empty spots and put them in buckets of rows, cols, sqrs
+	private void collectFilledSpots(int[][] input) {
 		for (int row = 0; row < input.length; row++) {
 			for (int col = 0; col < input[row].length; col++) {
 				if (input[row][col] != 0) {
@@ -399,8 +398,9 @@ public class Sudoku {
 				}
 			}
 		}
+	}
 
-		//populate emptySpotsList
+	private void collectEmptySpots(int[][] input) {
 		for (int row = 0; row < input.length; row++) {
 			for (int col = 0; col < input[row].length; col++) {
 				if (input[row][col] == 0) {

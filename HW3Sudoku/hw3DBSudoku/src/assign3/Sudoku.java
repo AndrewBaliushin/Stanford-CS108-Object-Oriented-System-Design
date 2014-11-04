@@ -24,7 +24,6 @@ public class Sudoku {
 	"0 7 3 5 0 9 0 0 1",
 	"4 0 0 0 0 0 6 7 9");
 	
-	
 	// Provided medium 5 3 grid
 	public static final int[][] mediumGrid = Sudoku.stringsToGrid(
 	 "530070000",
@@ -50,8 +49,7 @@ public class Sudoku {
 	"0 0 0 5 3 0 9 0 0",
 	"0 3 0 0 0 0 0 5 1");
 	
-	// Provided hard 3 7 grid
-	// 1 solution this way, 6 solutions if the 7 is changed to 0
+	// 6 solutions
 	public static final int[][] hardGridFork = Sudoku.stringsToGrid(
 	"3 0 0 0 0 0 0 8 0",
 	"0 0 1 0 9 3 0 0 0",
@@ -63,8 +61,6 @@ public class Sudoku {
 	"0 0 0 5 3 0 9 0 0",
 	"0 3 0 0 0 0 0 5 1");	
 	
-	
-	
 	public static final int[][] gridFromAssign = Sudoku.stringsToGrid(
 	"035290864",
 	"082410703",
@@ -75,12 +71,14 @@ public class Sudoku {
 	"406571009",
 	"359028417",
 	"800900526");
-			
 	
 	public static final int SIZE = 9;  // size of the whole 9x9 puzzle
 	public static final int PART = 3;  // size of each 3x3 part
 	public static final int MAX_SOLUTIONS = 100;
 	
+	private static final long startTime = System.currentTimeMillis(); 
+	
+	private static long endTime;
 	
 	// Refs to all non 0 spots on field;
 	private List<Sudoku.Spot> filledSpotsList = new ArrayList<Sudoku.Spot>();
@@ -88,42 +86,23 @@ public class Sudoku {
 	//list filled with empty spots
 	private List<Sudoku.EmptySpot> emptySpotsList = new ArrayList<Sudoku.EmptySpot>();
 	
-	/*
-	 * Lists of Buckets that contain
-	 * sets of spots in squares (3x3 area), rows and cols.
-	 * Sets won't allow duplication.
-	 * 
-	 */
+	//buckets for separate rows, cols, squares (area 3x3)
 	private HashMap<Integer, Set<Spot>> squaresBuckets = new HashMap<Integer, Set<Spot>>(SIZE);
 	private HashMap<Integer, Set<Spot>> rowsBuckets = new HashMap<Integer, Set<Spot>>(SIZE);
 	private HashMap<Integer, Set<Spot>> columnsBuckets = new HashMap<Integer, Set<Spot>>(SIZE);
 	
-	/*
-	 * grid as is from input.
-	 */
-	private int[][] originalGrid;
-	
-	/*
-	 * Grid after all spots have been added.
-	 */
 	private int[][] currentGrid = new int[SIZE][SIZE];
 	
-	/*
-	 * First successfull solve fill this var.
-	 */
-	private static int[][] solverGrid;
+	//solve() put solution here (if any) 
+	private static int[][] solvedGrid;
+	
 	
 	/**
-	 * Class for objects of spot. 
-	 * Stores coordinates and value for spot;
-	 * 
 	 * Spots are equal when their values are equal.
-	 * 
-	 * It's public for the sake of testing.
 	 * 
 	 * @author Adndrew Baliushin
 	 */
-	public class Spot {
+	private class Spot {
 		
 		protected int xCoord;
 		protected int yCoord;
@@ -131,7 +110,7 @@ public class Sudoku {
 		private int value;
 		
 		/**
-		 * Ctor of occupied cell;
+		 * Ctor for occupied cell;
 		 * @param x
 		 * @param y
 		 * @param value
@@ -143,8 +122,7 @@ public class Sudoku {
 		}
 		
 		/**
-		 * ctor of empty cell. Value = 0;
-		 * 
+		 * Ctor for empty cell. Value = 0;
 		 * @param x
 		 * @param y
 		 */
@@ -152,30 +130,19 @@ public class Sudoku {
 			this(y, x, 0);
 		}
 		
-		/**
-		 * @return int X-coordinate
-		 */
 		public int getX() {
 			return xCoord;
 		}
 		
-		/**
-		 * @return int Y-coordinate
-		 */
 		public int getY() {
 			return yCoord;
 		}
 
-		/**
-		 * @return value
-		 */
 		public int getValue() {
 			return value;
 		}
 		
-		
-		//since all we need is equality of values
-		//we can just return value
+		//hashs equals when values equals
 		@Override
 		public int hashCode() {
 			return value;
@@ -191,12 +158,12 @@ public class Sudoku {
 		    Spot test = (Spot) obj;
 		    return (this.getValue() == test.getValue());
 		}
-
-		
 	} //Spot
 	
-	
-	class EmptySpot extends Spot implements Comparable<EmptySpot> {
+	/**
+	 * Contains coords and array of possible values
+	 */
+	private class EmptySpot extends Spot implements Comparable<EmptySpot> {
 
 		private int[] possibleValues;
 		private int numberOfPossibleValues;
@@ -297,8 +264,8 @@ public class Sudoku {
 		Sudoku sudoku;
 		//sudoku = new Sudoku(gridFromAssign);
 		//sudoku = new Sudoku(hardGrid);
-		sudoku = new Sudoku(hardGridFork); // cool one with 6 solutions
 		//sudoku = new Sudoku(mediumGrid); 
+		sudoku = new Sudoku(hardGridFork); // cool one with 6 solutions
 		
 		System.out.println(sudoku); // print the raw problem
 		int count = sudoku.solve();
@@ -307,48 +274,15 @@ public class Sudoku {
 		System.out.println(sudoku.getSolutionText());
 	}
 	
-	
-	
-
 	/**
 	 * Sets up based on the given ints.
-	 * 
 	 */
 	public Sudoku(int[][] ints) {
-		/*
-		 * Convert 2d array into list of spots. And creates buckets, which
-		 * contain sets of spot values in each separate row, col, sqr.
-		 * Creates List of occupied spots.
-		 * Creates List of empty spots with possible values for them.
-		 * Sort that list by number of possible values  
-		 */
+		//fill Spots lists and buckets.
+		convertToSpots(ints);
 		
-		// YOUR CODE HERE
-		
-		//save original grid 
-		originalGrid = ints;	
-		
-		//parse 2-d array into list of spots and fill row, cols, squares buckets. 
-		for (int y = 0; y < ints.length; y++) { //rows 
-			for (int x = 0; x < ints[y].length; x++) { //cols
-				createSpotAndPutInBuckets(y, x, ints[y][x]);
-			}
-		}
-		
-		//put all empty spots in arraylist and sort
-		for (int y = 0; y < ints.length; y++) { //rows 
-			for (int x = 0; x < ints[y].length; x++) { //cols
-				if (ints[y][x] == 0) {
-					emptySpotsList.add(new EmptySpot(y, x, findPossibleValuesForEmptySpot(y, x)));
-				}
-			}
-		}
-		Collections.sort(emptySpotsList); 
-//		Just checking 
-//		for (EmptySpot s : emptySpotsList) {
-//			System.out.println(s.numberOfPossibleValues);
-//		}
-		
+		//sort by number of possible values (min -> max)
+		Collections.sort(emptySpotsList);		
 	}
 	
 	public Sudoku(String stringSudoku) {
@@ -359,35 +293,29 @@ public class Sudoku {
 		this(stringsToGrid(rows));
 	}
 	
-	
-	
-	
 	/**
 	 * Solves the puzzle, invoking the underlying recursive search.
 	 * Return number of possible solutions to this grid.
 	 */
 	public int solve() {
-		//if emptySpotsList is 0 then we finished
+		//no empty spots
 		if (emptySpotsList.size() == 0) {
-			solverGrid = new int[currentGrid.length][];
+			solvedGrid = new int[currentGrid.length][];
 			for (int i = 0; i < currentGrid.length; i++) {
-				solverGrid[i] = new int[currentGrid[i].length];
-				System.arraycopy(currentGrid[i], 0, solverGrid[i], 0,
+				solvedGrid[i] = new int[currentGrid[i].length];
+				System.arraycopy(currentGrid[i], 0, solvedGrid[i], 0,
 						currentGrid[i].length);
 			}
-
-			return 1; // return +1 to total count of available solutions
+			endTime = System.currentTimeMillis();
+			return 1;
 		}
 		
-		//if emptySpotsList contains spot with zero value options
-		//than its over. Grid not solvable. 
-		//we can take item at index 0 as smallest since list sorted
+		//unsolvable 
 		if(emptySpotsList.get(0).numberOfPossibleValues == 0) return 0;
 		
-		//If there is no single option spots left 
-		//we iterate through possible options
+		//only spots with multiple options left
 		if (emptySpotsList.get(0).numberOfPossibleValues > 1) {
-			int solutionsCounter = 0; //count how many grids solved successfully after fork
+			int solutionsCounter = 0;
 			EmptySpot emptySpot = emptySpotsList.get(0);
 			int[] possibleValues = emptySpot.getPossibleValues();
 			for (int i = 0; i < possibleValues.length; i++) {
@@ -397,19 +325,18 @@ public class Sudoku {
 					System.arraycopy(currentGrid[j], 0, forkedGrid[j], 0,
 							currentGrid[j].length);
 				}
-				forkedGrid[emptySpot.yCoord][emptySpot.xCoord] = possibleValues[i]; // modify
+				//fork
+				forkedGrid[emptySpot.yCoord][emptySpot.xCoord] = possibleValues[i];
 				try {
-					solutionsCounter += new Sudoku(forkedGrid).solve(); // recursion
+					solutionsCounter += new Sudoku(forkedGrid).solve();
 				} catch (RuntimeException e) {
-					// Just ignore it. It means that we tried impossible grid.
+					//paradox grid occurred. 
 				}
-				
 			}
-
 			return solutionsCounter;
 		}
 		
-		//if we got at least one single option spot
+		//fill all single-option spots
 		Iterator<EmptySpot> iter = emptySpotsList.iterator();
 		while (iter.hasNext()) {
 			EmptySpot emptySpot = iter.next();
@@ -422,19 +349,19 @@ public class Sudoku {
 		}
 		
 		return new Sudoku(currentGrid).solve();
-		
 	}
 	
 	public String getSolutionText() {
-		if (solverGrid != null) {
-			return gridToString(solverGrid);
+		if (solvedGrid != null) {
+			return gridToString(solvedGrid);
 		} else {
 			return "Solution not found";
 		}
 	}
 	
+	//time between initialization of Sudoku and completion of solve()
 	public long getElapsed() {
-		return 0; // YOUR CODE HERE
+		return endTime - startTime;
 	}
 	
 	/**
@@ -455,13 +382,33 @@ public class Sudoku {
 					sb.append("|");
 				}
 			}
-			
 			if ((i + 1) % PART == 0 && i != (SIZE - 1)) { //every 3 rows
 				sb.append("\n");
 			}
 			sb.append("\n");
 		}
 		return sb.toString();		
+	}
+	
+	private void convertToSpots(int[][] input) {
+		//create non empty spots and put them in buckets of rows, cols, sqrs
+		for (int row = 0; row < input.length; row++) {
+			for (int col = 0; col < input[row].length; col++) {
+				if (input[row][col] != 0) {
+					createSpotAndPutInBuckets(row, col, input[row][col]);
+				}
+			}
+		}
+
+		//populate emptySpotsList
+		for (int row = 0; row < input.length; row++) {
+			for (int col = 0; col < input[row].length; col++) {
+				if (input[row][col] == 0) {
+					emptySpotsList.add(new EmptySpot(row, col,
+							findPossibleValuesForEmptySpot(row, col)));
+				}
+			}
+		}
 	}
 	
 	private Spot createSpotAndPutInBuckets(int y, int x, int value) {
@@ -471,7 +418,6 @@ public class Sudoku {
 		
 		Spot spot = new Spot(y, x, value);
 		
-		//squares bucket
 		Set<Spot> sqrBucket = squaresBuckets.get(calculateSquareBucketId(y, x));
 		if (sqrBucket == null) {
 			sqrBucket = new HashSet<Sudoku.Spot>();
@@ -479,7 +425,6 @@ public class Sudoku {
 		}
 		putSpotInBucket(spot, sqrBucket);
 		
-		//row bucket
 		Set<Spot> rowBucket = rowsBuckets.get(y);
 		if (rowBucket == null) {
 			rowBucket = new HashSet<Sudoku.Spot>();
@@ -487,7 +432,6 @@ public class Sudoku {
 		}
 		putSpotInBucket(spot, rowBucket);
 		
-		//column bucket
 		Set<Spot> colBucket = columnsBuckets.get(x);
 		if (colBucket == null) {
 			colBucket = new HashSet<Sudoku.Spot>();
@@ -495,19 +439,13 @@ public class Sudoku {
 		}
 		putSpotInBucket(spot, colBucket);
 		
-		//if everything worked without exception than lets add spot to list
 		filledSpotsList.add(spot);
 		
-		//also lets put it in the array of current state.
 		currentGrid[y][x] = value;
 		
-		//return just in case
 		return spot;
 	}
 	
-	/*
-	 * Helper for putting spots in bucket
-	 */
 	private void putSpotInBucket(Spot spot, Set<Spot> bucket) {
 		if (bucket.contains(spot)) {
 			throw new RuntimeException("Spot " + spot.getX() + "," +
@@ -517,10 +455,7 @@ public class Sudoku {
 		}
 	}
 	
-	/*
-	 * Creates Set<Spot> with spots from 0 to SIZE values.
-	 * Used for comparation with row, col, sqr buckets.
-	 */
+	//set of spots with values from 0 to (SIZE - 1)
 	private Set<Spot> createPerfectSpotSet() {
 		Set<Spot> perfectSet = new HashSet<Sudoku.Spot>(SIZE);
 		for (int i = 1; i <= SIZE; i++) {
@@ -529,26 +464,11 @@ public class Sudoku {
 		return perfectSet;
 	}
 	
-	/**
-	 * Return id of bucket of squares (3x3 areas) where
-	 * this Spot should lend. 
-	 * Exmpl: First bucket in second is bucket #4. etc.
-	 * 
-	 * @return id of bucket from 0 to SIZE-1
-	 */
+	//Divide grid on buckets PART x PART size
 	private int calculateSquareBucketId(int y, int x) {
-		/* How it works:
-		 * int devided by anything floors down to closest int
-		 * 2/3 = 0, 4/3 = 1;
-		 * !!! (y / PART) * PART != y; exmpl: (4/3) * 3 = 3;
-		 */
 		return (x / PART) + (y / PART) * PART;
 	}
 	
-	
-	/*
-	 * Finds out what values are possible for empty spot y,x;
-	 */
 	private int[] findPossibleValuesForEmptySpot(int y, int x) {
 		Set<Spot> perfectSetOfSpots = createPerfectSpotSet();
 		

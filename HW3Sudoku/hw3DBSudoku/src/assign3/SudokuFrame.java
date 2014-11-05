@@ -30,7 +30,7 @@ import java.awt.event.*;
 		
 		createLayout();
 		addListners();
-		setDefaultPuzzle(Sudoku.hardGrid);
+		setDefaultPuzzle(SudokuTestGridsData.hardGrid);
 		
 		// Could do this:
 		// setLocationByPlatform(true);

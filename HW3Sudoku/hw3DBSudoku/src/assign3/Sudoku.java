@@ -76,9 +76,11 @@ public class Sudoku {
 	public static final int PART = 3;  // size of each 3x3 part
 	public static final int MAX_SOLUTIONS = 100;
 	
-	private static final long startTime = System.currentTimeMillis(); 
-	
 	private static long endTime;
+	
+	private long startTime; 
+	
+	
 	
 	// Refs to all non 0 spots on field;
 	private List<Sudoku.Spot> filledSpotsList = new ArrayList<Sudoku.Spot>();
@@ -298,6 +300,8 @@ public class Sudoku {
 	 * Return number of possible solutions to this grid.
 	 */
 	public int solve() {
+		startTime = System.currentTimeMillis();
+		
 		//no empty spots
 		if (emptySpotsList.size() == 0) {
 			solvedGrid = new int[currentGrid.length][];

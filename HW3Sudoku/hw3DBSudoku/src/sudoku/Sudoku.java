@@ -1,4 +1,4 @@
-package assign3;
+package sudoku;
 
 import java.util.*;
 

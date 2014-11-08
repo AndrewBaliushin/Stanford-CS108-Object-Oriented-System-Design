@@ -3,6 +3,11 @@ package databaseexercise;
 import java.awt.BorderLayout;
 import java.awt.ComponentOrientation;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -14,6 +19,10 @@ public class JMetropolisViewer extends JFrame {
 	public static final String METROPOLIS = "Metropolis";
 	public static final String POPULATION = "Population";
 	public static final String CONTINENT = "Continent";
+	
+	private List<City> metropolisList = new ArrayList<City>();
+	private Database db;
+	private MetropolisTableModel tableModel;
 	
 	private JTextField cityNameInput;
 	private JTextField cityContinentInput;
@@ -27,9 +36,16 @@ public class JMetropolisViewer extends JFrame {
 	
 	public JMetropolisViewer() {
 		super(APP_TITLE);
+		
+		db = new Database(metropolisList);
+		db.readAll();
+		
 		setLayout(new BorderLayout(4, 4));
 		add(makeInputFieldsPanel(), BorderLayout.NORTH);
-		add(makeResultTable(), BorderLayout.CENTER);
+		tableModel = new MetropolisTableModel(metropolisList);
+		add(makeResultTable(tableModel), BorderLayout.CENTER);
+		
+		addListners();
 		
 		pack();
 		setVisible(true);
@@ -41,6 +57,7 @@ public class JMetropolisViewer extends JFrame {
 		} catch (Exception ignored) { }
 		
 		JMetropolisViewer metropolisViewer = new JMetropolisViewer();	
+		
 	}
 	
 	private JPanel makeInputFieldsPanel() {
@@ -102,10 +119,36 @@ public class JMetropolisViewer extends JFrame {
 		return optionsPanel;		
 	}
 	
-	private JScrollPane makeResultTable() {
-		JTable resultTable = new JTable(new MetropolisTableModel());
+	private JScrollPane makeResultTable(AbstractTableModel model) {
+		JTable resultTable = new JTable(model);
 		JScrollPane scrollPane = new JScrollPane(resultTable);
 		
 		return scrollPane;
+	}
+	
+	private void addListners() {
+		addButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					db.add(createCity());
+					tableModel.fireTableDataChanged();
+				} catch (Exception e) {
+					System.out.println(e);
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	private City createCity() {
+		String city = cityNameInput.getText();
+		String continent = cityContinentInput.getText();
+		int population = Integer.parseInt(cityPopulationInput.getText());
+		if (city.length() != 0 && continent.length() != 0) {
+			return new City(city,continent, population);
+		} else {
+			return null;
+		}
 	}
 }

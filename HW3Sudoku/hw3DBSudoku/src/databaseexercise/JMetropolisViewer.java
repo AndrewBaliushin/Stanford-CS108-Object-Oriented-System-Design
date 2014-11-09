@@ -1,7 +1,6 @@
 package databaseexercise;
 
 import java.awt.BorderLayout;
-import java.awt.ComponentOrientation;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,13 +19,18 @@ public class JMetropolisViewer extends JFrame {
 	public static final String POPULATION = "Population";
 	public static final String CONTINENT = "Continent";
 	
+	//index[0] must be "larger than"
+	private static final String[] optionsForPopulation = {"Population larger than", "Population less than"};
+	//index[0] must be "partial match" 
+	private static final String[] optionsForMatch = {"Partial match", "Exact match"};
+	
 	private List<City> metropolisList = new ArrayList<City>();
 	private Database db;
 	private MetropolisTableModel tableModel;
 	
 	private JTextField cityNameInput;
-	private JTextField cityContinentInput;
-	private JTextField cityPopulationInput;
+	private JTextField continentInput;
+	private JTextField populationInput;
 	
 	private JButton addButton;
 	private JButton searchButton;
@@ -71,13 +75,13 @@ public class JMetropolisViewer extends JFrame {
 	    
 	    JLabel contL = new JLabel(CONTINENT + ":");
 	    inputFieldsPanel.add(contL);
-	    cityContinentInput = new JTextField(10);
-	    inputFieldsPanel.add(cityContinentInput);
+	    continentInput = new JTextField(10);
+	    inputFieldsPanel.add(continentInput);
 	    
 	    JLabel populationL = new JLabel(POPULATION + ":");
 	    inputFieldsPanel.add(populationL);
-	    cityPopulationInput = new JTextField(10);
-	    inputFieldsPanel.add(cityPopulationInput);
+	    populationInput = new JTextField(10);
+	    inputFieldsPanel.add(populationInput);
 	    
 	    inputFieldsPanel.add(makeControlPanel());
 	    
@@ -100,9 +104,6 @@ public class JMetropolisViewer extends JFrame {
 	}
 	
 	private JPanel makeSearchOptionBox() {
-		String[] optionsForPopulation = {"Population larger than", "Population less than"};
-		String[] optionsForMatch = {"Partial match", "Exact match"};
-		
 		JPanel optionsPanel = new JPanel();
 		optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.PAGE_AXIS));
 		optionsPanel.setBorder(new TitledBorder("Search options"));
@@ -139,16 +140,42 @@ public class JMetropolisViewer extends JFrame {
 				}
 			}
 		});
+		
+		searchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					db.search(cityNameInput.getText(),
+							continentInput.getText(),
+							parsePopulationInput(),
+							(matchSearchOptions.getSelectedIndex() == 0),
+							(populationSearchOptions.getSelectedIndex() == 0));
+					tableModel.fireTableDataChanged();
+				} catch (Exception e) {
+					System.out.println(e);
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	private City createCity() {
 		String city = cityNameInput.getText();
-		String continent = cityContinentInput.getText();
-		int population = Integer.parseInt(cityPopulationInput.getText());
+		String continent = continentInput.getText();
+		int population = parsePopulationInput();
 		if (city.length() != 0 && continent.length() != 0) {
 			return new City(city,continent, population);
 		} else {
 			return null;
+		}
+	}
+	
+	private int parsePopulationInput() {
+		String input = populationInput.getText();
+		if(input.length() == 0) {
+			return 0;
+		} else {
+			return Integer.parseInt(input);
 		}
 	}
 }

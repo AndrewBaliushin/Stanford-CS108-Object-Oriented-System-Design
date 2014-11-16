@@ -14,7 +14,7 @@ public class WebFrameTest {
 	public void testGetUrl() {
 		System.out.println("Working Directory = " +
 	              System.getProperty("user.dir"));
-		List<String> urlList = WebWorker.getURLlistFromFile(fileName);
+		List<String> urlList = WebFrame.getURLlistFromFile(fileName);
 		//System.out.println(urlList);
 		assertEquals("http://www.stanford.edu/class/cs108/foo.txt", urlList.get(0));
 	}
